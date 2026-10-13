@@ -1,0 +1,69 @@
+<mat-card class="filters-card">
+  <mat-card-content>
+    <h3 class="filters-title">
+      <mat-icon class="filters-title-icon">tune</mat-icon>
+      Filters
+    </h3>
+    <form [formGroup]="form" class="filter-form">
+
+      <ng-container *ngFor="let field of fields">
+
+        <!-- Text / Number inputs -->
+        <div class="filter-group" *ngIf="field.type === 'text' || field.type === 'number'">
+          <mat-form-field appearance="outline" class="filter-field">
+            <mat-label>{{ field.label }}</mat-label>
+            <mat-icon matPrefix *ngIf="field.key === 'radiusKm'">explore</mat-icon>
+            <mat-icon matPrefix *ngIf="field.key === 'minPrice' || field.key === 'maxPrice' || field.key === 'budget'">currency_rupee</mat-icon>
+            <input matInput
+                   [type]="field.type"
+                   [formControlName]="field.key"
+                   [placeholder]="field.placeholder ?? ''" />
+          </mat-form-field>
+        </div>
+
+        <!-- Select dropdown -->
+        <div class="filter-group" *ngIf="field.type === 'select'">
+          <mat-form-field appearance="outline" class="filter-field">
+            <mat-label>{{ field.label }}</mat-label>
+            <mat-icon matPrefix *ngIf="field.key === 'sortBy'">sort</mat-icon>
+            <mat-icon matPrefix *ngIf="field.key === 'sharingType'">bed</mat-icon>
+            <mat-icon matPrefix *ngIf="field.key === 'foodPreference' || field.key === 'foodType'">restaurant</mat-icon>
+            <mat-icon matPrefix *ngIf="field.key === 'smokingPreference'">smoking_rooms</mat-icon>
+            <mat-icon matPrefix *ngIf="field.key === 'preferredGender'">wc</mat-icon>
+            <mat-select [formControlName]="field.key">
+              <mat-option value="">All</mat-option>
+              <mat-option *ngFor="let opt of field.options" [value]="getOptionValue(opt)">{{ getOptionLabel(opt) }}</mat-option>
+            </mat-select>
+          </mat-form-field>
+        </div>
+
+        <!-- Checkbox group -->
+        <div *ngIf="field.type === 'checkbox-group'" class="filter-group filter-group--checkboxes">
+          <span class="field-label">
+            <mat-icon class="field-label-icon">check_circle</mat-icon>
+            {{ field.label }}
+          </span>
+          <div class="checkbox-grid">
+            <mat-checkbox *ngFor="let opt of field.options"
+                          color="primary"
+                          [checked]="isChecked(field.key, getOptionValue(opt))"
+                          (change)="toggleCheckbox(field.key, getOptionValue(opt))">
+              {{ getOptionLabel(opt) }}
+            </mat-checkbox>
+          </div>
+        </div>
+
+      </ng-container>
+
+      <div class="actions">
+        <button mat-raised-button color="primary" type="button" (click)="onApply()">
+          <mat-icon>search</mat-icon> Search
+        </button>
+        <button mat-stroked-button type="button" (click)="onReset()">
+          <mat-icon>refresh</mat-icon> Reset
+        </button>
+      </div>
+    </form>
+  </mat-card-content>
+</mat-card>
+

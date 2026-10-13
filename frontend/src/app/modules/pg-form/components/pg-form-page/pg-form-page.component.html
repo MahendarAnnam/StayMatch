@@ -1,0 +1,334 @@
+<section class="page-container form-page">
+
+  <button class="back-btn" (click)="goBack()">
+    <mat-icon class="back-icon">arrow_back</mat-icon> Back to Search
+  </button>
+
+  <h1 class="page-title">{{ editMode ? 'Edit PG Listing' : 'Post Your PG' }}</h1>
+
+  <!-- Loading -->
+  <div class="loading-state" *ngIf="loading">
+    <mat-icon class="loading-icon">hourglass_empty</mat-icon>
+    <p>Loading PG data…</p>
+  </div>
+
+  <!-- Messages -->
+  <div class="success-banner" *ngIf="successMessage">
+    <mat-icon>check_circle</mat-icon> {{ successMessage }}
+  </div>
+  <div class="error-banner" *ngIf="errorMessage">
+    <mat-icon>warning</mat-icon> {{ errorMessage }}
+  </div>
+
+  <!-- Step indicator -->
+  <div class="stepper" *ngIf="!loading">
+    <button *ngFor="let label of stepLabels; let i = index"
+            class="stepper-step"
+            [class.stepper-step--active]="i === currentStep"
+            [class.stepper-step--done]="i < currentStep"
+            (click)="goToStep(i)"
+            type="button">
+      <span class="stepper-number">{{ i < currentStep ? '✓' : i + 1 }}</span>
+      <span class="stepper-label">{{ label }}</span>
+    </button>
+  </div>
+
+  <!-- Form -->
+  <form *ngIf="!loading" [formGroup]="form" (ngSubmit)="onSubmit()" class="pg-form card">
+
+    <!-- ═══════════ STEP 0: Basic Info ═══════════ -->
+    <div class="step-content" *ngIf="currentStep === 0">
+
+      <!-- ── Owner Details ─────────────────────────────────────── -->
+      <fieldset class="form-section" *ngIf="!editMode">
+        <legend><mat-icon class="legend-icon">person</mat-icon> Owner Details</legend>
+        <div class="form-row">
+          <div class="form-field">
+            <label>Full Name *</label>
+            <input formControlName="ownerFullName" placeholder="Owner full name" />
+            <span class="field-error" *ngIf="hasError('ownerFullName', 'required')">Full name is required.</span>
+            <span class="field-error" *ngIf="hasError('ownerFullName', 'maxlength')">Max 100 characters.</span>
+          </div>
+          <div class="form-field">
+            <label>Email *</label>
+            <input formControlName="ownerEmail" type="email" placeholder="owner@email.com" />
+            <span class="field-error" *ngIf="hasError('ownerEmail', 'required')">Email is required.</span>
+            <span class="field-error" *ngIf="hasError('ownerEmail', 'email')">Enter a valid email.</span>
+          </div>
+          <div class="form-field">
+            <label>Phone</label>
+            <input formControlName="ownerPhone" placeholder="9876543210" />
+          </div>
+        </div>
+      </fieldset>
+
+      <!-- ── PG Basic Info ─────────────────────────────────────── -->
+      <fieldset class="form-section">
+        <legend><mat-icon class="legend-icon">apartment</mat-icon> PG Information</legend>
+        <div class="form-row">
+          <div class="form-field form-field--wide">
+            <label>PG Name *</label>
+            <input formControlName="name" placeholder="e.g. Green Nest PG" />
+            <span class="field-error" *ngIf="hasError('name', 'required')">PG name is required.</span>
+            <span class="field-error" *ngIf="hasError('name', 'maxlength')">Max 150 characters.</span>
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-field form-field--wide">
+            <label>Description</label>
+            <textarea formControlName="description" rows="3" placeholder="Describe your PG — nearby landmarks, rules, etc."></textarea>
+          </div>
+        </div>
+      </fieldset>
+
+      <!-- ── Location (auto-fill) ─────────────────────────────── -->
+      <fieldset class="form-section">
+        <legend><mat-icon class="legend-icon">location_on</mat-icon> Location</legend>
+
+        <div class="location-picker-wrapper">
+          <app-location-picker
+            storageKey="pg_form_location"
+            (locationSelected)="onLocationPicked($event)">
+          </app-location-picker>
+        </div>
+
+        <div class="form-row">
+          <div class="form-field">
+            <label>Address / Location Label *</label>
+            <input formControlName="locationLabel" placeholder="Koramangala, Bangalore" />
+            <span class="field-error" *ngIf="hasError('locationLabel', 'required')">Location label is required.</span>
+          </div>
+          <div class="form-field">
+            <label>City</label>
+            <input formControlName="city" placeholder="Bangalore" />
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-field">
+            <label>Latitude *</label>
+            <input formControlName="latitude" type="number" step="any" placeholder="12.9716" />
+            <span class="field-error" *ngIf="hasError('latitude', 'required')">Latitude is required.</span>
+          </div>
+          <div class="form-field">
+            <label>Longitude *</label>
+            <input formControlName="longitude" type="number" step="any" placeholder="77.5946" />
+            <span class="field-error" *ngIf="hasError('longitude', 'required')">Longitude is required.</span>
+          </div>
+        </div>
+        <p class="location-hint">
+          💡 Use the location picker above to auto-fill coordinates and address.
+        </p>
+      </fieldset>
+
+      <!-- Step navigation -->
+      <div class="step-actions">
+        <span></span>
+        <button type="button" class="btn btn--primary" (click)="nextStep()">
+          Next: Details <mat-icon class="btn-icon-right">arrow_forward</mat-icon>
+        </button>
+      </div>
+    </div>
+
+    <!-- ═══════════ STEP 1: Details ═══════════ -->
+    <div class="step-content" *ngIf="currentStep === 1">
+
+      <!-- ── Sharing Options ───────────────────────────────────── -->
+      <fieldset class="form-section">
+        <legend><mat-icon class="legend-icon">bed</mat-icon> Sharing Options</legend>
+        <div formArrayName="sharingOptions">
+          <div class="sharing-entry" *ngFor="let opt of sharingOptions.controls; let i = index" [formGroupName]="i">
+            <div class="form-row">
+              <div class="form-field">
+                <label>Type</label>
+                <select formControlName="sharingType">
+                  <option value="SINGLE">Single</option>
+                  <option value="DOUBLE">Double</option>
+                  <option value="TRIPLE">Triple</option>
+                  <option value="FOUR_SHARING">Four Sharing</option>
+                </select>
+              </div>
+              <div class="form-field">
+                <label>Rent (₹/month)</label>
+                <input formControlName="rent" type="number" placeholder="5000" />
+              </div>
+              <div class="form-field">
+                <label>Available</label>
+                <input formControlName="availabilityCount" type="number" placeholder="3" />
+              </div>
+              <button type="button" class="remove-btn" (click)="removeSharingOption(i)" title="Remove">
+                <mat-icon>close</mat-icon>
+              </button>
+            </div>
+          </div>
+        </div>
+        <button type="button" class="add-btn" (click)="addSharingOption()">
+          <mat-icon>add</mat-icon> Add Sharing Option
+        </button>
+      </fieldset>
+
+      <!-- ── Pricing ─────────────────────────────────────────── -->
+      <fieldset class="form-section">
+        <legend><mat-icon class="legend-icon">payments</mat-icon> Price Visibility</legend>
+        <div class="form-row">
+          <div class="form-field">
+            <label>Price Display Type</label>
+            <select formControlName="priceType">
+              <option *ngFor="let pt of priceTypes" [value]="pt.value">{{ pt.label }}</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-row" *ngIf="showRangeFields">
+          <div class="form-field">
+            <label>Min Price (₹)</label>
+            <input formControlName="minPrice" type="number" placeholder="4000" />
+          </div>
+          <div class="form-field">
+            <label>Max Price (₹)</label>
+            <input formControlName="maxPrice" type="number" placeholder="7000" />
+          </div>
+        </div>
+        <p class="pricing-hint" *ngIf="form.get('priceType')?.value === 'EXACT'">
+          💡 The cheapest sharing option rent will be shown on the card.
+        </p>
+        <p class="pricing-hint" *ngIf="form.get('priceType')?.value === 'HIDDEN'">
+          🔒 Price will be hidden. Users will see "Contact for price".
+        </p>
+        <p class="pricing-hint" *ngIf="form.get('priceType')?.value === 'RANGE'">
+          📊 A price range will be displayed on the card (e.g. ₹4,000–₹7,000).
+        </p>
+      </fieldset>
+
+      <!-- ── Facilities ────────────────────────────────────────── -->
+      <fieldset class="form-section">
+        <legend><mat-icon class="legend-icon">verified</mat-icon> Facilities</legend>
+        <div class="chip-toggles">
+          <button type="button"
+                  *ngFor="let f of facilityOptions"
+                  class="chip-toggle"
+                  [class.chip-toggle--active]="isFacilitySelected(f)"
+                  (click)="toggleFacility(f)">
+            <mat-icon class="chip-toggle-icon">{{ isFacilitySelected(f) ? 'check_circle' : 'radio_button_unchecked' }}</mat-icon>
+            {{ f }}
+          </button>
+        </div>
+      </fieldset>
+
+      <!-- ── Food Type ─────────────────────────────────────────── -->
+      <fieldset class="form-section">
+        <legend><mat-icon class="legend-icon">restaurant</mat-icon> Food & Menu</legend>
+
+        <div class="form-row">
+          <div class="form-field">
+            <label>Food Type</label>
+            <select formControlName="foodType">
+              <option [ngValue]="null">— Not specified —</option>
+              <option *ngFor="let ft of foodTypes" [value]="ft.value">{{ ft.label }}</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- Non-veg / Egg days -->
+        <div *ngIf="showNonVegDays" class="days-section">
+          <label class="days-label">🍗 Non-veg days</label>
+          <div class="day-toggles">
+            <button type="button"
+                    *ngFor="let d of daysOfWeek"
+                    class="day-toggle"
+                    [class.day-toggle--active]="isDaySelected('nonVegDays', d)"
+                    [class.day-toggle--nonveg]="isDaySelected('nonVegDays', d)"
+                    (click)="toggleDay('nonVegDays', d)">
+              {{ shortDays[d] }}
+            </button>
+          </div>
+
+          <label class="days-label" style="margin-top: 0.75rem">🥚 Egg days</label>
+          <div class="day-toggles">
+            <button type="button"
+                    *ngFor="let d of daysOfWeek"
+                    class="day-toggle"
+                    [class.day-toggle--active]="isDaySelected('eggDays', d)"
+                    [class.day-toggle--egg]="isDaySelected('eggDays', d)"
+                    (click)="toggleDay('eggDays', d)">
+              {{ shortDays[d] }}
+            </button>
+          </div>
+        </div>
+
+        <!-- Weekly menu -->
+        <div class="menu-form" formGroupName="weeklyMenu">
+          <label class="days-label" style="margin-top: 1rem">📋 Weekly Menu (comma-separated items per day)</label>
+          <div class="menu-day-input" *ngFor="let d of daysOfWeek">
+            <span class="menu-day-label">{{ shortDays[d] }}</span>
+            <input [formControlName]="d" placeholder="e.g. Poha, Dal Rice, Roti Sabzi" />
+          </div>
+        </div>
+      </fieldset>
+
+      <!-- Step navigation -->
+      <div class="step-actions">
+        <button type="button" class="btn btn--secondary" (click)="prevStep()">
+          <mat-icon class="btn-icon-left">arrow_back</mat-icon> Back
+        </button>
+        <button type="button" class="btn btn--primary" (click)="nextStep()">
+          Next: Media <mat-icon class="btn-icon-right">arrow_forward</mat-icon>
+        </button>
+      </div>
+    </div>
+
+    <!-- ═══════════ STEP 2: Media & Submit ═══════════ -->
+    <div class="step-content" *ngIf="currentStep === 2">
+
+      <!-- ── Images ────────────────────────────────────────────── -->
+      <fieldset class="form-section">
+        <legend><mat-icon class="legend-icon">photo_library</mat-icon> Images</legend>
+        <p class="section-hint">Add image URLs for your PG listing. These will be displayed on the PG card and detail page.</p>
+        <div formArrayName="imageUrls">
+          <div class="image-entry" *ngFor="let ctrl of imageUrls.controls; let i = index">
+            <div class="form-row">
+              <div class="form-field form-field--wide">
+                <input [formControlName]="i" placeholder="https://example.com/pg-image.jpg" />
+              </div>
+              <button type="button" class="remove-btn" (click)="removeImageUrl(i)" title="Remove image">
+                <mat-icon>close</mat-icon>
+              </button>
+            </div>
+          </div>
+        </div>
+        <button type="button" class="add-btn" (click)="addImageUrl()">
+          <mat-icon>add_photo_alternate</mat-icon> Add Image URL
+        </button>
+      </fieldset>
+
+      <!-- ── Contact Details ───────────────────────────────────── -->
+      <fieldset class="form-section">
+        <legend><mat-icon class="legend-icon">contact_phone</mat-icon> Contact Details</legend>
+        <p class="section-hint">These details will be shown to interested tenants.</p>
+        <div class="form-row">
+          <div class="form-field">
+            <label>Contact Phone</label>
+            <input formControlName="contactPhone" placeholder="9876543210" />
+          </div>
+          <div class="form-field">
+            <label>Contact Email</label>
+            <input formControlName="contactEmail" type="email" placeholder="contact@email.com" />
+            <span class="field-error" *ngIf="hasError('contactEmail', 'email')">Enter a valid email.</span>
+          </div>
+        </div>
+      </fieldset>
+
+      <!-- ── Submit ────────────────────────────────────────────── -->
+      <div class="step-actions">
+        <button type="button" class="btn btn--secondary" (click)="prevStep()">
+          <mat-icon class="btn-icon-left">arrow_back</mat-icon> Back
+        </button>
+        <button type="submit" class="btn btn--primary btn--submit" [disabled]="submitting">
+          <mat-icon *ngIf="submitting" class="spin-icon">autorenew</mat-icon>
+          {{ submitting ? 'Saving…' : (editMode ? 'Update PG' : 'Create PG Listing') }}
+        </button>
+      </div>
+    </div>
+
+  </form>
+
+</section>
+

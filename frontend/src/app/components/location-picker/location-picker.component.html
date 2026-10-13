@@ -1,0 +1,69 @@
+<div class="location-picker">
+  <span class="picker-label">Location</span>
+
+  <!-- Use My Location button -->
+  <button mat-stroked-button
+          type="button"
+          class="geo-btn"
+          [disabled]="geoLoading"
+          (click)="useMyLocation()">
+    <mat-icon>my_location</mat-icon>
+    {{ geoLoading ? 'Detecting…' : 'Use My Location' }}
+  </button>
+
+  <span class="or-divider">or search a location</span>
+
+  <!-- Location search autocomplete -->
+  <mat-form-field appearance="outline" class="city-field">
+    <mat-label>Search city or area...</mat-label>
+    <input matInput
+           type="text"
+           [formControl]="searchControl"
+           [matAutocomplete]="locationAuto"
+           placeholder="e.g. Bangalore, Kondapur, HSR Layout" />
+    <mat-icon matSuffix class="search-icon">search</mat-icon>
+    <mat-hint *ngIf="searchHint" class="search-hint">{{ searchHint }}</mat-hint>
+    <mat-autocomplete #locationAuto="matAutocomplete"
+                      (optionSelected)="onSuggestionSelected($event.option.value)"
+                      autoActiveFirstOption>
+      <mat-option *ngFor="let s of suggestions" [value]="s">
+        <div class="suggestion-option">
+          <mat-icon class="suggestion-icon">{{ s.placeId ? 'place' : (s.type === 'area' ? 'place' : 'location_city') }}</mat-icon>
+          <div class="suggestion-text">
+            <span class="suggestion-label">{{ s.label }}</span>
+            <span class="suggestion-desc" *ngIf="s.description">{{ s.description }}</span>
+          </div>
+        </div>
+      </mat-option>
+      <mat-option *ngIf="loadingSuggestions" disabled>
+        <mat-spinner diameter="18" class="inline-spinner"></mat-spinner> Searching…
+      </mat-option>
+      <mat-option *ngIf="!loadingSuggestions && suggestions.length === 0 && searchControl.value && searchControl.value.length >= 3" disabled>
+        No locations found
+      </mat-option>
+    </mat-autocomplete>
+  </mat-form-field>
+
+  <!-- Address resolving indicator -->
+  <div class="address-loading" *ngIf="addressLoading">
+    <mat-spinner diameter="18"></mat-spinner>
+    <span>Resolving address…</span>
+  </div>
+
+  <!-- Resolved badge -->
+  <div class="resolved-badge" *ngIf="resolved && !addressLoading">
+    <mat-icon class="badge-icon">check_circle</mat-icon>
+    <div class="badge-details">
+      <span class="badge-label">{{ resolved.address || resolved.label }}</span>
+      <span class="badge-area" *ngIf="resolved.area && resolved.area !== resolved.label">{{ resolved.area }}</span>
+      <span class="badge-type" *ngIf="resolved.type">{{ resolved.type === 'gps' ? 'GPS' : resolved.type === 'area' ? 'Area' : 'City' }}</span>
+    </div>
+    <button mat-icon-button class="badge-clear" (click)="clearLocation()" title="Change location">
+      <mat-icon>close</mat-icon>
+    </button>
+  </div>
+
+  <!-- Geo error -->
+  <div class="geo-error" *ngIf="geoError">{{ geoError }}</div>
+</div>
+

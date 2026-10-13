@@ -1,0 +1,70 @@
+<mat-card class="tenant-card" *ngIf="tenant" (click)="openDetail()" role="link" tabindex="0"
+          (keydown.enter)="openDetail()">
+  <mat-card-content>
+    <!-- Availability badge -->
+    <div class="availability-bar">
+      <span class="availability-badge" [class.availability-badge--full]="availableSpots === 0">
+        <mat-icon class="availability-icon">{{ availableSpots > 0 ? 'group_add' : 'group_off' }}</mat-icon>
+        {{ availableSpots > 0
+          ? availableSpots + (availableSpots === 1 ? ' spot available' : ' spots available')
+          : 'Fully occupied' }}
+      </span>
+      <span class="capacity-label">{{ tenant.currentOccupancy }}/{{ tenant.totalCapacity }} filled</span>
+    </div>
+
+    <!-- Occupancy progress bar -->
+    <div class="occupancy-track">
+      <div class="occupancy-fill" [ngClass]="occupancyColor"
+           [style.width.%]="occupancyPercent"></div>
+    </div>
+
+    <h3 class="tenant-title">{{ tenant.title }}</h3>
+
+    <span class="tenant-budget">
+      <mat-icon class="budget-icon">currency_rupee</mat-icon>
+      {{ tenant.minBudget | number:'1.0-0' }} – {{ tenant.maxBudget | number:'1.0-0' }}
+    </span>
+
+    <p class="tenant-location">
+      <mat-icon class="meta-icon">place</mat-icon> {{ tenant.shortAddress || tenant.locationLabel }}
+    </p>
+
+    <p class="tenant-desc" *ngIf="tenant.description">{{ tenant.description }}</p>
+
+    <div class="tenant-meta">
+      <span class="meta-item" *ngIf="tenant.moveInDate">
+        <mat-icon class="meta-icon">event</mat-icon> Available from: {{ tenant.moveInDate }}
+      </span>
+      <span class="meta-item tenant-user" *ngIf="tenant.user">
+        <mat-icon class="meta-icon">person</mat-icon> {{ tenant.user.fullName }}
+      </span>
+    </div>
+
+    <!-- Preference chips -->
+    <mat-chip-set *ngIf="prefChips.length > 0" class="tenant-chips">
+      <mat-chip *ngFor="let c of prefChips" class="pref-chip">
+        <mat-icon class="chip-icon" *ngIf="c === 'VEG' || c === 'NON_VEG' || c === 'BOTH'">restaurant</mat-icon>
+        <mat-icon class="chip-icon" *ngIf="c === 'NO_SMOKING' || c === 'SMOKING_ALLOWED'">smoking_rooms</mat-icon>
+        <mat-icon class="chip-icon" *ngIf="c === 'MALE' || c === 'FEMALE' || c === 'ANY'">wc</mat-icon>
+        {{ c }}
+      </mat-chip>
+    </mat-chip-set>
+
+    <p class="tenant-notes" *ngIf="tenant.preference?.additionalNotes">
+      <mat-icon class="meta-icon">chat_bubble_outline</mat-icon>
+      {{ tenant.preference.additionalNotes }}
+    </p>
+
+    <!-- Badges -->
+    <div class="tenant-badges">
+      <span class="badge badge--roommate" *ngIf="availableSpots > 0">
+        <mat-icon class="badge-icon">diversity_3</mat-icon>
+        Looking for roommates
+      </span>
+      <span class="badge badge--distance" *ngIf="tenant.distanceKm !== undefined && tenant.distanceKm !== null">
+        <mat-icon class="badge-icon">near_me</mat-icon>
+        {{ tenant.distanceKm }} km away
+      </span>
+    </div>
+  </mat-card-content>
+</mat-card>

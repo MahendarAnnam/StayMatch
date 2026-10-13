@@ -1,0 +1,55 @@
+# ============================================================
+# StayMatch — Production Profile
+# Activate: spring.profiles.active=prod
+# ============================================================
+
+# ── PostgreSQL Database ──────────────────────────────────────
+spring:
+  datasource:
+    url: ${DATABASE_URL:jdbc:postgresql://localhost:5432/staymatch}
+    driver-class-name: org.postgresql.Driver
+    username: ${DATABASE_USERNAME:staymatch}
+    password: ${DATABASE_PASSWORD:}
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    defer-datasource-initialization: false
+    properties:
+      hibernate:
+        format_sql: false
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+    show-sql: false
+  sql:
+    init:
+      mode: never
+
+  # ── H2 Console — disabled in production ──────────────────────
+  h2:
+    console:
+      enabled: false
+
+  # ── Redis Cache ──────────────────────────────────────────────
+  data:
+    redis:
+      host: ${REDIS_HOST:localhost}
+      port: ${REDIS_PORT:6379}
+      password: ${REDIS_PASSWORD:}
+      timeout: 2000ms
+  cache:
+    type: redis
+    redis:
+      time-to-live: 600000
+      cache-null-values: false
+
+# ── CORS — production domain only ────────────────────────────
+app:
+  cors:
+    allowed-origins: ${CORS_ALLOWED_ORIGINS:https://staymatch.com}
+
+# ── Production logging (minimal) ─────────────────────────────
+logging:
+  level:
+    org.springframework.web: WARN
+    org.hibernate.SQL: WARN
+    org.staymatch: INFO
+

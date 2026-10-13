@@ -1,0 +1,148 @@
+<section class="page-container create-page">
+
+  <button mat-button class="back-btn" (click)="goBack()">
+    <mat-icon>arrow_back</mat-icon> Back to Find Roommates
+  </button>
+
+  <mat-card class="form-card">
+    <mat-card-content>
+      <h2>Post Available Room</h2>
+
+      <!-- Success -->
+      <div class="success-banner" *ngIf="successMessage">{{ successMessage }}</div>
+
+      <!-- Error -->
+      <div class="error-banner" *ngIf="errorMessage">{{ errorMessage }}</div>
+
+      <form [formGroup]="form" (ngSubmit)="onSubmit()">
+
+        <!-- ── Your Details ───────────────────────────────────── -->
+        <fieldset>
+          <legend>Your Details</legend>
+          <div class="field-row">
+            <mat-form-field appearance="outline">
+              <mat-label>Full Name *</mat-label>
+              <input matInput formControlName="fullName" placeholder="John Doe" />
+              <mat-error *ngIf="isInvalid('fullName')">Required (max 100 chars)</mat-error>
+            </mat-form-field>
+            <mat-form-field appearance="outline">
+              <mat-label>Email *</mat-label>
+              <input matInput type="email" formControlName="email" placeholder="you@example.com" />
+              <mat-error *ngIf="isInvalid('email')">Valid email required</mat-error>
+            </mat-form-field>
+            <mat-form-field appearance="outline">
+              <mat-label>Phone</mat-label>
+              <input matInput formControlName="phoneNumber" placeholder="9876543210" />
+            </mat-form-field>
+          </div>
+        </fieldset>
+
+        <!-- ── Room Details ───────────────────────────────────── -->
+        <fieldset>
+          <legend>Room Details</legend>
+          <mat-form-field appearance="outline" class="full-width">
+            <mat-label>Title *</mat-label>
+            <input matInput formControlName="title" placeholder="e.g. 2BHK in Koramangala — 1 spot open" />
+            <mat-error *ngIf="isInvalid('title')">Required (max 120 chars)</mat-error>
+          </mat-form-field>
+
+          <mat-form-field appearance="outline" class="full-width">
+            <mat-label>Description</mat-label>
+            <textarea matInput formControlName="description" rows="3"
+                      placeholder="Describe the room, amenities, house rules…"></textarea>
+          </mat-form-field>
+
+          <div class="field-row">
+            <mat-form-field appearance="outline">
+              <mat-label>Min Rent (₹/month) *</mat-label>
+              <input matInput type="number" formControlName="minBudget" placeholder="5000" />
+              <mat-error *ngIf="isInvalid('minBudget')">Required, > 0</mat-error>
+            </mat-form-field>
+            <mat-form-field appearance="outline">
+              <mat-label>Max Rent (₹/month) *</mat-label>
+              <input matInput type="number" formControlName="maxBudget" placeholder="12000" />
+              <mat-error *ngIf="isInvalid('maxBudget')">Required, > 0</mat-error>
+            </mat-form-field>
+          </div>
+
+          <div class="field-row">
+            <mat-form-field appearance="outline">
+              <mat-label>Total Capacity *</mat-label>
+              <input matInput type="number" formControlName="totalCapacity" placeholder="e.g. 3" />
+              <mat-error *ngIf="isInvalid('totalCapacity')">Required, ≥ 1</mat-error>
+            </mat-form-field>
+            <mat-form-field appearance="outline">
+              <mat-label>Current Occupancy *</mat-label>
+              <input matInput type="number" formControlName="currentOccupancy" placeholder="e.g. 1" />
+              <mat-error *ngIf="isInvalid('currentOccupancy')">Required, ≥ 0</mat-error>
+            </mat-form-field>
+          </div>
+
+          <!-- Location Picker (reverse-geocoded) -->
+          <div class="field">
+            <app-location-picker
+              storageKey="tenant_location"
+              (locationSelected)="onLocationSelected($event)">
+            </app-location-picker>
+            <span class="field-error"
+                  *ngIf="isInvalid('preferredLatitude') || isInvalid('preferredLongitude') || isInvalid('locationLabel')">
+              Please select a location using the picker above
+            </span>
+          </div>
+
+          <div class="field-row">
+            <mat-form-field appearance="outline">
+              <mat-label>Location Label *</mat-label>
+              <input matInput formControlName="locationLabel" placeholder="Auto-filled from location picker" readonly />
+            </mat-form-field>
+            <mat-form-field appearance="outline">
+              <mat-label>Available From *</mat-label>
+              <input matInput type="date" formControlName="moveInDate" />
+              <mat-error *ngIf="isInvalid('moveInDate')">Required</mat-error>
+            </mat-form-field>
+          </div>
+        </fieldset>
+
+        <!-- ── Preferences ──────────────────────────────────────── -->
+        <fieldset>
+          <legend>Roommate Preferences</legend>
+          <div class="field-row">
+            <mat-form-field appearance="outline">
+              <mat-label>Food</mat-label>
+              <mat-select formControlName="foodPreference">
+                <mat-option value="">Any</mat-option>
+                <mat-option *ngFor="let o of foodOptions" [value]="o">{{ o }}</mat-option>
+              </mat-select>
+            </mat-form-field>
+            <mat-form-field appearance="outline">
+              <mat-label>Smoking</mat-label>
+              <mat-select formControlName="smokingPreference">
+                <mat-option value="">Any</mat-option>
+                <mat-option *ngFor="let o of smokingOptions" [value]="o">{{ o }}</mat-option>
+              </mat-select>
+            </mat-form-field>
+            <mat-form-field appearance="outline">
+              <mat-label>Gender</mat-label>
+              <mat-select formControlName="preferredGender">
+                <mat-option value="">Any</mat-option>
+                <mat-option *ngFor="let o of genderOptions" [value]="o">{{ o }}</mat-option>
+              </mat-select>
+            </mat-form-field>
+          </div>
+
+          <mat-form-field appearance="outline" class="full-width">
+            <mat-label>Additional Notes</mat-label>
+            <textarea matInput formControlName="additionalNotes" rows="2"
+                      placeholder="e.g. Early riser, no loud music, pets allowed"></textarea>
+          </mat-form-field>
+        </fieldset>
+
+        <!-- Submit -->
+        <button mat-raised-button color="primary" type="submit" class="submit-btn" [disabled]="loading">
+          {{ loading ? 'Posting…' : 'Post Available Room' }}
+        </button>
+      </form>
+    </mat-card-content>
+  </mat-card>
+</section>
+

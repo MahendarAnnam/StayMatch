@@ -1,0 +1,119 @@
+<mat-toolbar color="primary" class="app-header">
+  <div class="page-container header-content">
+
+    <!-- Brand -->
+    <a routerLink="/" class="brand" (click)="closeMobileMenu()">
+      <span class="brand-icon">SM</span>
+      <span class="brand-text">Stay <strong>Match</strong></span>
+    </a>
+
+    <!-- Desktop nav -->
+    <nav class="nav-links desktop-only">
+      <a mat-button routerLink="/pg-search" routerLinkActive="nav-active">PG Search</a>
+      <a mat-button routerLink="/tenant-matching" routerLinkActive="nav-active">Find Roommates</a>
+      <a mat-button routerLink="/pg/new" routerLinkActive="nav-active"
+         class="nav-cta"
+         *ngIf="(authService.currentUser$ | async) as user"
+         [class.nav-cta--visible]="user.role === 'PG_OWNER' || user.role === 'ADMIN'">
+        <mat-icon class="nav-cta-icon">add_business</mat-icon> Post Your PG
+      </a>
+    </nav>
+
+    <!-- Desktop actions -->
+    <div class="header-actions desktop-only">
+      <ng-container *ngIf="authService.currentUser$ | async as user; else desktopLogin">
+        <div class="profile-dropdown-wrap">
+          <button class="avatar-btn" (click)="toggleProfileDropdown(); $event.stopPropagation()"
+                  [attr.aria-expanded]="profileDropdownOpen"
+                  aria-haspopup="true">
+            <span class="avatar-circle">{{ getAvatarInitial(user.email) }}</span>
+          </button>
+
+          <!-- Dropdown card -->
+          <div class="profile-dropdown" *ngIf="profileDropdownOpen" (click)="$event.stopPropagation()">
+            <div class="profile-dropdown-header">
+              <span class="dropdown-avatar">{{ getAvatarInitial(user.email) }}</span>
+              <div class="dropdown-user-info">
+                <span class="dropdown-user-name">{{ getUserDisplayName(user.email) }}</span>
+                <span class="dropdown-user-email">{{ user.email }}</span>
+              </div>
+            </div>
+            <div class="profile-dropdown-divider"></div>
+            <button class="profile-dropdown-item profile-dropdown-item--logout" (click)="logout()">
+              <mat-icon class="dropdown-item-icon">logout</mat-icon>
+              Logout
+            </button>
+          </div>
+        </div>
+      </ng-container>
+      <ng-template #desktopLogin>
+        <a mat-stroked-button routerLink="/login" routerLinkActive="nav-active" class="btn-login">Login</a>
+      </ng-template>
+    </div>
+
+    <!-- Hamburger button (mobile only) -->
+    <button class="hamburger" (click)="toggleMobileMenu()" [class.hamburger--open]="mobileMenuOpen"
+            aria-label="Toggle menu">
+      <span class="hamburger-line"></span>
+      <span class="hamburger-line"></span>
+      <span class="hamburger-line"></span>
+    </button>
+
+  </div>
+</mat-toolbar>
+
+<!-- Mobile drawer overlay -->
+<div class="mobile-overlay"
+     *ngIf="mobileMenuOpen"
+     (click)="closeMobileMenu()"></div>
+
+<!-- Mobile slide-in drawer -->
+<nav class="mobile-drawer" [class.mobile-drawer--open]="mobileMenuOpen">
+  <div class="mobile-drawer-header">
+    <span class="mobile-drawer-title">Menu</span>
+    <button mat-icon-button class="mobile-drawer-close" (click)="closeMobileMenu()">
+      <mat-icon>close</mat-icon>
+    </button>
+  </div>
+
+  <div class="mobile-nav-links">
+    <a routerLink="/pg-search" routerLinkActive="mobile-nav-active" (click)="closeMobileMenu()">
+      <mat-icon>search</mat-icon> PG Search
+    </a>
+    <a routerLink="/tenant-matching" routerLinkActive="mobile-nav-active" (click)="closeMobileMenu()">
+      <mat-icon>group_add</mat-icon> Find Roommates
+    </a>
+    <a routerLink="/pg/new" routerLinkActive="mobile-nav-active" (click)="closeMobileMenu()"
+       *ngIf="(authService.currentUser$ | async) as user"
+       [style.display]="(user.role === 'PG_OWNER' || user.role === 'ADMIN') ? 'flex' : 'none'">
+      <mat-icon>add_business</mat-icon> Post Your PG
+    </a>
+  </div>
+
+  <div class="mobile-drawer-divider"></div>
+
+  <div class="mobile-auth">
+    <ng-container *ngIf="authService.currentUser$ | async as user; else mobileLogin">
+      <div class="mobile-user-info">
+        <span class="mobile-user-avatar">{{ getAvatarInitial(user.email) }}</span>
+        <div class="mobile-user-details">
+          <span class="mobile-user-name">{{ getUserDisplayName(user.email) }}</span>
+          <span class="mobile-user-email">{{ user.email }}</span>
+        </div>
+      </div>
+      <a class="mobile-nav-link-btn" (click)="logout()">
+        <mat-icon>logout</mat-icon> Logout
+      </a>
+    </ng-container>
+    <ng-template #mobileLogin>
+      <a routerLink="/login" class="mobile-nav-link-btn" (click)="closeMobileMenu()">
+        <mat-icon>login</mat-icon> Login
+      </a>
+    </ng-template>
+  </div>
+</nav>
+
+<main class="app-main">
+  <router-outlet></router-outlet>
+</main>
+

@@ -1,0 +1,146 @@
+/* ── Filters card ─────────────────────────────────────────────────── */
+.filters-card {
+  border-radius: var(--radius-lg, 16px) !important;
+  width: 100%;
+  max-width: 100%;                     /* fill sidebar — no fixed max */
+  overflow: hidden;                    /* prevent children from exceeding card */
+  box-sizing: border-box;
+  padding: 0 !important;              /* remove default mat-card padding; use mat-card-content */
+}
+
+/* Card content — consistent inner padding */
+.filters-card .mat-mdc-card-content {
+  padding: 0.85rem !important;
+  box-sizing: border-box;
+  overflow: hidden;
+}
+
+@media (max-width: 767px) {
+  .filters-card {
+    max-width: 100%;
+  }
+}
+
+.filters-title {
+  margin: 0 0 0.65rem 0;
+  font-size: 0.95rem;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  color: var(--color-text);
+  letter-spacing: -0.01em;
+}
+
+.filters-title-icon {
+  font-size: 18px;
+  width: 18px;
+  height: 18px;
+  color: var(--color-primary);
+}
+
+/* ── Form grid — uniform spacing ─────────────────────────────────── */
+.filter-form {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;                        /* 12px uniform gap between fields */
+}
+
+/* ── Individual filter group ─────────────────────────────────────── */
+.filter-group {
+  width: 100%;
+  box-sizing: border-box;
+}
+
+/* Override mat-form-field bottom spacing within filter panel */
+.filter-group .mat-mdc-form-field {
+  margin-bottom: 0;
+}
+
+.filter-group .mat-mdc-form-field-subscript-wrapper {
+  display: none;                       /* hide subscript spacer — no errors here */
+}
+
+/* Ensure the text-field wrapper fills width and uses consistent height */
+.filter-field {
+  width: 100%;
+}
+
+.filter-field .mat-mdc-text-field-wrapper {
+  box-sizing: border-box;
+}
+
+.filter-field .mdc-text-field--outlined {
+  height: 40px;
+}
+
+.filter-field .mat-mdc-form-field-infix {
+  min-height: 40px;
+  padding-top: 8px !important;
+  padding-bottom: 8px !important;
+}
+
+/* ── Checkbox filter group ───────────────────────────────────────── */
+.filter-group--checkboxes {
+  display: flex;
+  flex-direction: column;
+  gap: 0.45rem;
+  padding: 0.65rem 0.7rem;
+  background: var(--color-bg, #f1f5f9);
+  border-radius: var(--radius-md, 12px);
+  box-sizing: border-box;
+}
+
+/* ── Field label (for checkbox group) ────────────────────────────── */
+.field-label {
+  font-weight: 700;
+  font-size: 0.75rem;
+  color: var(--color-text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+.field-label-icon {
+  font-size: 14px !important;
+  width: 14px !important;
+  height: 14px !important;
+  color: var(--color-primary);
+}
+
+/* ── Checkbox grid ───────────────────────────────────────────────── */
+.checkbox-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.2rem 0.35rem;
+}
+
+/* Scale down checkbox labels for compact fit */
+.checkbox-grid .mat-mdc-checkbox {
+  font-size: 0.8rem;
+}
+
+/* Prevent long labels from causing overflow */
+.checkbox-grid .mat-mdc-checkbox .mdc-label,
+.checkbox-grid .mat-mdc-checkbox label {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* ── Action buttons ───────────────────────────────────────────────── */
+.actions {
+  display: flex;
+  gap: 0.5rem;
+  margin-top: 0.25rem;
+}
+
+.actions button {
+  flex: 1;
+  height: 40px;
+  font-size: 0.85rem;
+  border-radius: var(--radius-md, 12px) !important;
+  min-width: 0;                        /* allow flex shrink on small containers */
+}

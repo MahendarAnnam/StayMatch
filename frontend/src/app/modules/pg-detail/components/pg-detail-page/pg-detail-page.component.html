@@ -1,0 +1,263 @@
+<section class="page-container detail-page">
+
+  <!-- Back link -->
+  <button class="back-btn" (click)="goBack()">
+    <mat-icon class="back-icon">arrow_back</mat-icon> Back to Search
+  </button>
+
+  <!-- Loading skeleton -->
+  <ng-container *ngIf="loading">
+    <div class="skeleton-gallery skeleton"></div>
+    <div class="skeleton-info-grid">
+      <div class="skeleton-main card">
+        <div class="skeleton skeleton-text skeleton-text--lg"></div>
+        <div class="skeleton skeleton-text skeleton-text--md"></div>
+        <div class="skeleton skeleton-text skeleton-text--sm"></div>
+        <div style="height: 1rem"></div>
+        <div class="skeleton skeleton-text skeleton-text--lg"></div>
+        <div class="skeleton skeleton-text skeleton-text--md"></div>
+        <div class="skeleton skeleton-text skeleton-text--lg"></div>
+      </div>
+      <div class="skeleton-sidebar card">
+        <div class="skeleton skeleton-text skeleton-text--sm"></div>
+        <div class="skeleton skeleton-text skeleton-text--md" style="height: 24px"></div>
+        <div style="height: 0.5rem"></div>
+        <div class="skeleton skeleton-text skeleton-text--sm"></div>
+        <div class="skeleton skeleton-text skeleton-text--md"></div>
+      </div>
+    </div>
+  </ng-container>
+
+  <!-- Error -->
+  <div class="error-state card" *ngIf="!loading && errorMessage">
+    <mat-icon class="error-state-icon">error_outline</mat-icon>
+    <p class="error-msg">{{ errorMessage }}</p>
+    <div class="error-actions">
+      <button class="btn btn--primary" (click)="retry()">Retry</button>
+      <button class="btn btn--secondary" (click)="goBack()">Back to Search</button>
+    </div>
+  </div>
+
+  <!-- Content -->
+  <ng-container *ngIf="!loading && pg">
+
+    <!-- ── Image Gallery ──────────────────────────────────────────── -->
+    <div class="gallery card" *ngIf="galleryImages.length > 0">
+      <div class="gallery-main">
+        <button class="gallery-arrow gallery-arrow--left"
+                *ngIf="activeImageIndex > 0"
+                (click)="prevImage()">
+          <mat-icon>chevron_left</mat-icon>
+        </button>
+
+        <img class="gallery-hero"
+             [src]="activeImage?.imageUrl"
+             [alt]="pg.name + ' image ' + (activeImageIndex + 1)" />
+
+        <button class="gallery-arrow gallery-arrow--right"
+                *ngIf="activeImageIndex < galleryImages.length - 1"
+                (click)="nextImage()">
+          <mat-icon>chevron_right</mat-icon>
+        </button>
+
+        <span class="gallery-counter">
+          {{ activeImageIndex + 1 }} / {{ galleryImages.length }}
+        </span>
+      </div>
+
+      <div class="gallery-thumbs" *ngIf="galleryImages.length > 1">
+        <img *ngFor="let img of galleryImages; let i = index"
+             class="thumb"
+             [class.thumb--active]="i === activeImageIndex"
+             [src]="img.imageUrl"
+             [alt]="'Thumbnail ' + (i + 1)"
+             (click)="selectImage(i)" />
+      </div>
+    </div>
+
+    <!-- No images placeholder -->
+    <div class="no-images card" *ngIf="galleryImages.length === 0">
+      <mat-icon class="no-images-icon">image</mat-icon>
+      <span>No images available for this PG.</span>
+    </div>
+
+    <!-- ── Info Section ───────────────────────────────────────────── -->
+    <div class="info-grid">
+
+      <!-- Left: Main details -->
+      <div class="info-main card">
+        <h1 class="pg-name">{{ pg.name }}</h1>
+        <p class="pg-location">
+          <mat-icon class="detail-icon">place</mat-icon> {{ pg.fullAddress || pg.locationLabel }}
+        </p>
+
+        <p class="pg-description" *ngIf="pg.description">{{ pg.description }}</p>
+
+        <!-- Sharing Options -->
+        <div class="section">
+          <h2 class="section-title">
+            <mat-icon class="section-title-icon">bed</mat-icon> Sharing Options
+          </h2>
+          <div class="sharing-table">
+            <div class="sharing-row sharing-row--header">
+              <span>Type</span>
+              <span>Rent / month</span>
+              <span>Available</span>
+            </div>
+            <div class="sharing-row" *ngFor="let opt of pg.sharingOptions">
+              <span class="sharing-type">{{ opt.sharingType }}</span>
+              <span class="sharing-rent">₹{{ opt.rent | number:'1.0-0' }}</span>
+              <span class="sharing-avail"
+                    [class.sharing-avail--zero]="opt.availabilityCount === 0">
+                {{ opt.availabilityCount > 0 ? opt.availabilityCount + ' beds' : 'Full' }}
+              </span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Facilities -->
+        <div class="section" *ngIf="pg.facilities && pg.facilities.length > 0">
+          <h2 class="section-title">
+            <mat-icon class="section-title-icon">verified</mat-icon> Facilities
+          </h2>
+          <div class="facility-chips">
+            <span class="chip" *ngFor="let f of pg.facilities">
+              <mat-icon class="chip-icon">check_circle</mat-icon>{{ f }}
+            </span>
+          </div>
+        </div>
+
+        <!-- Food Information -->
+        <div class="section" *ngIf="foodTypeLabel">
+          <h2 class="section-title">
+            <mat-icon class="section-title-icon">restaurant</mat-icon> Food Information
+          </h2>
+          <div class="food-info-row">
+            <span class="food-badge" [ngClass]="foodBadgeClass">{{ foodTypeLabel }}</span>
+          </div>
+          <div class="food-days-row" *ngIf="pg.nonVegDays && pg.nonVegDays.length > 0">
+            <span class="food-days-label">🍗 Non-veg days:</span>
+            <span class="food-day-chip food-day-chip--nonveg" *ngFor="let d of pg.nonVegDays">{{ shortDays[d] || d }}</span>
+          </div>
+          <div class="food-days-row" *ngIf="pg.eggDays && pg.eggDays.length > 0">
+            <span class="food-days-label">🥚 Egg days:</span>
+            <span class="food-day-chip food-day-chip--egg" *ngFor="let d of pg.eggDays">{{ shortDays[d] || d }}</span>
+          </div>
+        </div>
+
+        <!-- Weekly Menu Table -->
+        <div class="section" *ngIf="hasWeeklyMenu">
+          <h2 class="section-title">
+            <mat-icon class="section-title-icon">menu_book</mat-icon> Weekly Menu
+          </h2>
+          <div class="menu-table-wrapper">
+            <div class="menu-table">
+              <div class="menu-col" *ngFor="let day of daysOfWeek">
+                <div class="menu-col-header"
+                     [class.menu-col-header--nonveg]="isNonVegDay(day)"
+                     [class.menu-col-header--egg]="isEggDay(day) && !isNonVegDay(day)">
+                  {{ shortDays[day] }}
+                  <span class="menu-day-tag" *ngIf="isNonVegDay(day)">🍗</span>
+                  <span class="menu-day-tag" *ngIf="isEggDay(day) && !isNonVegDay(day)">🥚</span>
+                </div>
+                <div class="menu-items">
+                  <span class="menu-item"
+                        *ngFor="let item of getMenuForDay(day)"
+                        [class.menu-item--special]="isSpecialMeal(item)">
+                    {{ item }}
+                    <mat-icon class="special-icon" *ngIf="isSpecialMeal(item)">star</mat-icon>
+                  </span>
+                  <span class="menu-item menu-item--empty" *ngIf="getMenuForDay(day).length === 0">—</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Right: Sidebar (owner + quick stats) -->
+      <aside class="info-sidebar card">
+        <!-- Pricing: EXACT -->
+        <div class="stat-block" *ngIf="pg.priceType !== 'RANGE' && pg.priceType !== 'HIDDEN' && cheapestRent !== null">
+          <span class="stat-label">Starting from</span>
+          <span class="stat-value stat-value--price">
+            <mat-icon class="price-stat-icon">currency_rupee</mat-icon>
+            {{ cheapestRent | number:'1.0-0' }}<small>/mo</small>
+          </span>
+        </div>
+
+        <!-- Pricing: RANGE -->
+        <div class="stat-block" *ngIf="pg.priceType === 'RANGE'">
+          <span class="stat-label">Price range</span>
+          <span class="stat-value stat-value--price">
+            <mat-icon class="price-stat-icon">currency_rupee</mat-icon>
+            {{ pg.minPrice | number:'1.0-0' }}–₹{{ pg.maxPrice | number:'1.0-0' }}<small>/mo</small>
+          </span>
+        </div>
+
+        <!-- Pricing: HIDDEN -->
+        <div class="stat-block" *ngIf="pg.priceType === 'HIDDEN'">
+          <span class="stat-label">Pricing</span>
+          <span class="stat-value stat-value--hidden-price">
+            <mat-icon class="stat-icon">phone</mat-icon>
+            Contact for price
+          </span>
+        </div>
+
+        <div class="stat-block">
+          <span class="stat-label">Total availability</span>
+          <span class="stat-value">
+            <mat-icon class="stat-icon">hotel</mat-icon>
+            {{ totalAvailability }} bed{{ totalAvailability === 1 ? '' : 's' }}
+          </span>
+        </div>
+
+        <div class="stat-block">
+          <span class="stat-label">Status</span>
+          <span class="status-badge" [class.status-badge--active]="pg.isActive">
+            <mat-icon class="status-icon">{{ pg.isActive ? 'check_circle' : 'cancel' }}</mat-icon>
+            {{ pg.isActive ? 'Active' : 'Inactive' }}
+          </span>
+        </div>
+
+        <hr />
+
+        <div class="owner-section" *ngIf="pg.owner">
+          <h3><mat-icon class="owner-title-icon">person</mat-icon> Owner</h3>
+          <p class="owner-name">{{ pg.owner.fullName }}</p>
+          <p class="owner-contact" *ngIf="pg.owner.email">
+            <mat-icon class="contact-icon">email</mat-icon> {{ pg.owner.email }}
+          </p>
+          <p class="owner-contact" *ngIf="pg.owner.phoneNumber">
+            <mat-icon class="contact-icon">phone</mat-icon> {{ pg.owner.phoneNumber }}
+          </p>
+        </div>
+
+        <!-- Edit / Delete actions (owner or admin only) -->
+        <div class="owner-actions" *ngIf="canEditOrDelete">
+          <hr />
+          <button class="btn btn--primary btn--full" (click)="editPg()">
+            <mat-icon>edit</mat-icon> Edit PG
+          </button>
+          <ng-container *ngIf="!deleteConfirm">
+            <button class="btn btn--danger btn--full" (click)="confirmDelete()">
+              <mat-icon>delete</mat-icon> Delete PG
+            </button>
+          </ng-container>
+          <ng-container *ngIf="deleteConfirm">
+            <p class="delete-warning">Are you sure? This action cannot be undone.</p>
+            <div class="delete-confirm-row">
+              <button class="btn btn--danger" (click)="deletePg()" [disabled]="deleting">
+                {{ deleting ? 'Deleting…' : 'Yes, Delete' }}
+              </button>
+              <button class="btn btn--secondary" (click)="cancelDelete()">Cancel</button>
+            </div>
+          </ng-container>
+        </div>
+      </aside>
+
+    </div>
+  </ng-container>
+
+</section>
+

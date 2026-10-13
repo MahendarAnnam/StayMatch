@@ -1,0 +1,35 @@
+# ============================================================
+# StayMatch — Test Configuration
+# Activates the 'local' profile for H2 + seed data, then
+# overrides specific settings for test isolation.
+# ============================================================
+spring:
+  application:
+    name: StayMatch
+  profiles:
+    active: local
+  # Override local profile settings for test isolation
+  jpa:
+    hibernate:
+      ddl-auto: update
+  h2:
+    console:
+      enabled: false
+  # Use simple in-memory cache (no Redis needed)
+  cache:
+    type: simple
+
+server:
+  error:
+    include-message: always
+
+app:
+  jwt:
+    secret: c3RheW1hdGNoLXN1cGVyLXNlY3JldC1rZXktZm9yLWp3dC10b2tlbi1nZW5lcmF0aW9uLTIwMjY=
+    expiration-ms: 900000
+    refresh-expiration-ms: 604800000
+  rate-limit:
+    requests-per-minute: 50
+  cors:
+    allowed-origins: http://localhost:4200
+

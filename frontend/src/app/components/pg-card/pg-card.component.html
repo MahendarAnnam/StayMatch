@@ -1,0 +1,96 @@
+<mat-card class="pg-card" *ngIf="pg" (click)="openDetails()">
+
+  <!-- Image -->
+  <div class="pg-image-wrap">
+    <img *ngIf="thumbnail" class="pg-image" [src]="thumbnail" [alt]="pg.name" loading="lazy" />
+    <div *ngIf="!thumbnail" class="pg-image pg-image--empty">
+      <mat-icon>image</mat-icon>
+      <span>No Image</span>
+    </div>
+
+    <!-- Price overlay -->
+    <ng-container [ngSwitch]="pg.priceType">
+      <!-- HIDDEN -->
+      <span class="pg-price-badge pg-price-badge--hidden" *ngSwitchCase="'HIDDEN'">
+        <mat-icon class="price-icon">phone</mat-icon>
+        Contact for price
+      </span>
+      <!-- RANGE -->
+      <ng-container *ngSwitchCase="'RANGE'">
+        <span class="pg-price-badge pg-price-badge--range"
+              *ngIf="pg.minPrice && pg.maxPrice">
+          <mat-icon class="price-icon">currency_rupee</mat-icon>
+          {{ pg.minPrice | number:'1.0-0' }}–₹{{ pg.maxPrice | number:'1.0-0' }}<small>/mo</small>
+        </span>
+      </ng-container>
+      <!-- EXACT (default) -->
+      <ng-container *ngSwitchDefault>
+        <span class="pg-price-badge" *ngIf="cheapestRent !== null">
+          <mat-icon class="price-icon">currency_rupee</mat-icon>
+          {{ cheapestRent | number:'1.0-0' }}<small>/mo</small>
+        </span>
+      </ng-container>
+    </ng-container>
+
+    <!-- Distance pill -->
+    <span class="pg-distance-badge" *ngIf="pg.distanceKm !== null">
+      <mat-icon class="distance-icon">near_me</mat-icon>
+      {{ pg.distanceKm }} km
+    </span>
+  </div>
+
+  <!-- Body -->
+  <mat-card-content class="pg-body">
+    <h3 class="pg-name">{{ pg.name }}</h3>
+    <p class="pg-location">
+      <mat-icon class="location-icon">place</mat-icon>
+      <span class="location-text">{{ pg.shortAddress || pg.locationLabel }}</span>
+    </p>
+
+    <!-- Sharing options (single row, capped) -->
+    <div class="pg-sharing" *ngIf="pg.sharingOptions && pg.sharingOptions.length > 0">
+      <mat-icon class="section-icon">bed</mat-icon>
+      <div class="pg-chips-row">
+        <mat-chip-set class="pg-chips">
+          <mat-chip *ngFor="let opt of visibleSharing" class="chip--sharing" highlighted>
+            {{ opt.sharingType }} · ₹{{ opt.rent | number:'1.0-0' }}
+          </mat-chip>
+          <mat-chip *ngIf="hiddenSharingCount > 0"
+                    class="chip--more"
+                    (click)="openDetails(); $event.stopPropagation()">
+            +{{ hiddenSharingCount }}
+          </mat-chip>
+        </mat-chip-set>
+      </div>
+    </div>
+
+    <!-- Facilities (single row, capped) -->
+    <div class="pg-facilities" *ngIf="pg.facilities && pg.facilities.length > 0">
+      <mat-icon class="section-icon">verified</mat-icon>
+      <div class="pg-chips-row">
+        <mat-chip-set class="pg-chips">
+          <mat-chip *ngFor="let f of visibleFacilities" class="chip--facility">{{ f }}</mat-chip>
+          <mat-chip *ngIf="hiddenFacilityCount > 0"
+                    class="chip--more"
+                    (click)="openDetails(); $event.stopPropagation()">
+            +{{ hiddenFacilityCount }} more
+          </mat-chip>
+        </mat-chip-set>
+      </div>
+    </div>
+
+    <!-- Food type -->
+    <div class="pg-food" *ngIf="foodTypeLabel">
+      <mat-icon class="section-icon">restaurant</mat-icon>
+      <span class="food-badge" [ngClass]="foodTypeBadgeClass">{{ foodTypeLabel }}</span>
+      <span class="nonveg-days-hint" *ngIf="nonVegDaysSummary">{{ nonVegDaysSummary }}</span>
+    </div>
+  </mat-card-content>
+
+  <mat-card-actions class="pg-actions">
+    <button mat-raised-button color="primary" (click)="openDetails(); $event.stopPropagation()">
+      View Details
+      <mat-icon>arrow_forward</mat-icon>
+    </button>
+  </mat-card-actions>
+</mat-card>

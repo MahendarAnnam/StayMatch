@@ -1,0 +1,100 @@
+<section class="page-container search-layout">
+
+  <!-- ── Mobile filter toggle (sticky) ─────────────────────────────── -->
+  <button mat-stroked-button
+          class="mobile-filter-toggle"
+          (click)="filtersOpen = !filtersOpen"
+          [class.active]="filtersOpen">
+    <mat-icon>{{ filtersOpen ? 'close' : 'tune' }}</mat-icon>
+    {{ filtersOpen ? 'Hide Filters' : 'Filters' }}
+  </button>
+
+  <!-- ── Sidebar: Location + Filters ───────────────────────────────── -->
+  <aside class="sidebar" [class.sidebar--open]="filtersOpen">
+    <app-location-picker
+      storageKey="tenant_location"
+      (locationSelected)="onLocationSelected($event)">
+    </app-location-picker>
+
+    <app-filters-panel
+      [fields]="filterFields"
+      (applyFilters)="search($event)">
+    </app-filters-panel>
+  </aside>
+
+  <!-- ── Results panel ─────────────────────────────────────────────── -->
+  <div class="results-panel" #resultsPanel>
+
+    <!-- Header + results count + post room link -->
+    <div class="results-header">
+      <h2>Find Roommates</h2>
+      <span class="results-count" *ngIf="tenantPosts.length > 0">
+        <mat-icon class="count-icon">group</mat-icon>
+        {{ tenantPosts.length }} rooms available
+      </span>
+      <a mat-raised-button color="primary" routerLink="create" class="create-link">
+        <mat-icon>add</mat-icon> Post Available Room
+      </a>
+    </div>
+
+    <!-- Location prompt — shown until user selects a location -->
+    <div class="location-prompt" *ngIf="!locationReady && !loading">
+      <mat-icon class="prompt-icon">location_on</mat-icon>
+      <p class="prompt-title">Select your location</p>
+      <p class="prompt-hint">Please choose a city or use your current location to find rooms near you.</p>
+      <!-- Mobile: nudge user to open the filter sidebar -->
+      <button mat-raised-button color="primary" class="prompt-btn mobile-only"
+              (click)="filtersOpen = true">
+        <mat-icon>my_location</mat-icon> Set Location
+      </button>
+    </div>
+
+    <!-- Error -->
+    <div class="error-banner" *ngIf="locationReady && errorMessage">
+      <mat-icon class="error-icon">warning</mat-icon>
+      <span>{{ errorMessage }}</span>
+      <button mat-stroked-button class="retry-btn" (click)="doRetry()">Retry</button>
+    </div>
+
+    <!-- Empty state (location selected but no results) -->
+    <div class="empty-state" *ngIf="locationReady && !loading && tenantPosts.length === 0 && !errorMessage">
+      <mat-icon class="empty-icon">group_add</mat-icon>
+      <p class="empty-title">No rooms available yet</p>
+      <p class="empty-hint">Try adjusting your filters or <a routerLink="create">post your available room</a>.</p>
+    </div>
+
+    <!-- Skeleton loaders (initial load) -->
+    <div class="cards-grid" *ngIf="locationReady && loading && tenantPosts.length === 0">
+      <div class="skeleton-card" *ngFor="let i of [1,2,3,4,5,6]">
+        <div class="skeleton-body">
+          <div class="skeleton skeleton-text skeleton-text--lg"></div>
+          <div class="skeleton skeleton-text skeleton-text--md"></div>
+          <div class="skeleton skeleton-text skeleton-text--sm"></div>
+          <div class="skeleton-pills">
+            <div class="skeleton skeleton-pill"></div>
+            <div class="skeleton skeleton-pill"></div>
+            <div class="skeleton skeleton-pill"></div>
+          </div>
+          <div class="skeleton skeleton-btn"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Real cards grid -->
+    <div class="cards-grid" *ngIf="tenantPosts.length > 0">
+      <app-tenant-card
+        *ngFor="let post of tenantPosts; trackBy: trackByPostId"
+        [tenant]="post">
+      </app-tenant-card>
+    </div>
+
+    <!-- End of results -->
+    <p class="end-label" *ngIf="!loading && tenantPosts.length > 0">
+      <mat-icon class="end-icon">check_circle</mat-icon>
+      You've reached the end of results.
+    </p>
+
+
+  </div>
+</section>
+

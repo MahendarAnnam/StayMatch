@@ -1,0 +1,12 @@
+# Gradle build and cache directories
+.gradle/
+**/build/
+api-gateway/.gradle/
+
+# IntelliJ IDEA configuration
+.idea/
+*.iml
+
+# Frontend build outputs and dependencies
+frontend/dist/
+node_modules/

@@ -1,0 +1,257 @@
+<section class="page-container detail-page">
+
+  <!-- Back link -->
+  <button class="back-btn" (click)="goBack()">
+    <mat-icon class="back-icon">arrow_back</mat-icon> Back to Roommates
+  </button>
+
+  <!-- Loading skeleton -->
+  <ng-container *ngIf="loading">
+    <div class="skeleton-info-grid">
+      <div class="skeleton-main card">
+        <div class="skeleton skeleton-text skeleton-text--lg"></div>
+        <div class="skeleton skeleton-text skeleton-text--md"></div>
+        <div class="skeleton skeleton-text skeleton-text--sm"></div>
+        <div style="height: 1rem"></div>
+        <div class="skeleton skeleton-text skeleton-text--lg"></div>
+        <div class="skeleton skeleton-text skeleton-text--md"></div>
+        <div class="skeleton skeleton-text skeleton-text--lg"></div>
+      </div>
+      <div class="skeleton-sidebar card">
+        <div class="skeleton skeleton-text skeleton-text--sm"></div>
+        <div class="skeleton skeleton-text skeleton-text--md" style="height: 24px"></div>
+        <div style="height: 0.5rem"></div>
+        <div class="skeleton skeleton-text skeleton-text--sm"></div>
+        <div class="skeleton skeleton-text skeleton-text--md"></div>
+      </div>
+    </div>
+  </ng-container>
+
+  <!-- Error -->
+  <div class="error-state card" *ngIf="!loading && errorMessage">
+    <mat-icon class="error-state-icon">error_outline</mat-icon>
+    <p class="error-msg">{{ errorMessage }}</p>
+    <div class="error-actions">
+      <button class="btn btn--primary" (click)="retry()">Retry</button>
+      <button class="btn btn--secondary" (click)="goBack()">Back to Roommates</button>
+    </div>
+  </div>
+
+  <!-- Content -->
+  <ng-container *ngIf="!loading && post">
+
+    <!-- ── Hero Header ──────────────────────────────────────────── -->
+    <div class="hero-header card">
+      <div class="hero-top-row">
+        <span class="availability-badge" [class.availability-badge--full]="availableSpots === 0">
+          <mat-icon class="badge-sm-icon">{{ availableSpots > 0 ? 'group_add' : 'group_off' }}</mat-icon>
+          {{ availableSpots > 0
+            ? availableSpots + (availableSpots === 1 ? ' spot available' : ' spots available')
+            : 'Fully occupied' }}
+        </span>
+        <span class="posted-date" *ngIf="postedDateDisplay">
+          <mat-icon class="meta-sm-icon">schedule</mat-icon> Posted {{ postedDateDisplay }}
+        </span>
+      </div>
+      <h1 class="listing-title">{{ post.title }}</h1>
+      <p class="listing-location">
+        <mat-icon class="detail-icon">place</mat-icon> {{ post.fullAddress || post.locationLabel }}
+      </p>
+      <span class="listing-budget">
+        <mat-icon class="budget-icon">currency_rupee</mat-icon>
+        {{ post.minBudget | number:'1.0-0' }} – {{ post.maxBudget | number:'1.0-0' }}
+        <small>/month</small>
+      </span>
+    </div>
+
+    <!-- ── Info Grid ─────────────────────────────────────────────── -->
+    <div class="info-grid">
+
+      <!-- Left: Main details -->
+      <div class="info-main card">
+
+        <!-- Description -->
+        <div class="section" *ngIf="post.description">
+          <h2 class="section-title">
+            <mat-icon class="section-title-icon">description</mat-icon> Description
+          </h2>
+          <p class="listing-description">{{ post.description }}</p>
+        </div>
+
+        <!-- Occupancy & Capacity -->
+        <div class="section">
+          <h2 class="section-title">
+            <mat-icon class="section-title-icon">meeting_room</mat-icon> Room Details
+          </h2>
+          <div class="occupancy-grid">
+            <div class="occupancy-card">
+              <mat-icon class="occupancy-card-icon occupancy-card-icon--total">groups</mat-icon>
+              <div class="occupancy-card-info">
+                <span class="occupancy-card-value">{{ post.totalCapacity }}</span>
+                <span class="occupancy-card-label">Total Capacity</span>
+              </div>
+            </div>
+            <div class="occupancy-card">
+              <mat-icon class="occupancy-card-icon occupancy-card-icon--current">person</mat-icon>
+              <div class="occupancy-card-info">
+                <span class="occupancy-card-value">{{ post.currentOccupancy }}</span>
+                <span class="occupancy-card-label">Current Occupants</span>
+              </div>
+            </div>
+            <div class="occupancy-card">
+              <mat-icon class="occupancy-card-icon occupancy-card-icon--available">person_add</mat-icon>
+              <div class="occupancy-card-info">
+                <span class="occupancy-card-value occupancy-card-value--highlight">{{ availableSpots }}</span>
+                <span class="occupancy-card-label">Spots Available</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Occupancy bar -->
+          <div class="occupancy-bar-wrap">
+            <div class="occupancy-bar">
+              <div class="occupancy-bar-fill" [style.width.%]="occupancyPercent"></div>
+            </div>
+            <span class="occupancy-bar-label">{{ occupancyPercent }}% occupied</span>
+          </div>
+        </div>
+
+        <!-- Preferences -->
+        <div class="section" *ngIf="foodPreferenceLabel || smokingLabel || genderLabel">
+          <h2 class="section-title">
+            <mat-icon class="section-title-icon">tune</mat-icon> Preferences
+          </h2>
+          <div class="pref-badges">
+            <span class="pref-badge" [ngClass]="foodBadgeClass" *ngIf="foodPreferenceLabel">
+              <mat-icon class="pref-badge-icon">restaurant</mat-icon> {{ foodPreferenceLabel }}
+            </span>
+            <span class="pref-badge" [ngClass]="smokingBadgeClass" *ngIf="smokingLabel">
+              <mat-icon class="pref-badge-icon">smoking_rooms</mat-icon> {{ smokingLabel }}
+            </span>
+            <span class="pref-badge" [ngClass]="genderBadgeClass" *ngIf="genderLabel">
+              <mat-icon class="pref-badge-icon">wc</mat-icon> {{ genderLabel }}
+            </span>
+          </div>
+        </div>
+
+        <!-- Move-in Date -->
+        <div class="section" *ngIf="moveInDateDisplay">
+          <h2 class="section-title">
+            <mat-icon class="section-title-icon">event</mat-icon> Move-in Date
+          </h2>
+          <p class="move-in-date">{{ moveInDateDisplay }}</p>
+        </div>
+
+        <!-- Location -->
+        <div class="section">
+          <h2 class="section-title">
+            <mat-icon class="section-title-icon">location_on</mat-icon> Location
+          </h2>
+          <p class="location-text">{{ post.shortAddress || post.locationLabel }}</p>
+          <p class="location-coords">
+            <mat-icon class="meta-sm-icon">my_location</mat-icon>
+            {{ post.preferredLatitude.toFixed(4) }}, {{ post.preferredLongitude.toFixed(4) }}
+          </p>
+        </div>
+
+        <!-- Additional Notes -->
+        <div class="section" *ngIf="post.preference?.additionalNotes">
+          <h2 class="section-title">
+            <mat-icon class="section-title-icon">chat_bubble_outline</mat-icon> Additional Notes
+          </h2>
+          <p class="additional-notes">{{ post.preference.additionalNotes }}</p>
+        </div>
+      </div>
+
+      <!-- Right: Sidebar -->
+      <aside class="info-sidebar card">
+
+        <!-- Rent -->
+        <div class="stat-block">
+          <span class="stat-label">Budget / Rent</span>
+          <span class="stat-value stat-value--price">
+            <mat-icon class="price-stat-icon">currency_rupee</mat-icon>
+            {{ post.minBudget | number:'1.0-0' }}–{{ post.maxBudget | number:'1.0-0' }}<small>/mo</small>
+          </span>
+        </div>
+
+        <!-- Availability -->
+        <div class="stat-block">
+          <span class="stat-label">Available Spots</span>
+          <span class="stat-value">
+            <mat-icon class="stat-icon">hotel</mat-icon>
+            {{ availableSpots }} of {{ post.totalCapacity }}
+          </span>
+        </div>
+
+        <!-- Status -->
+        <div class="stat-block">
+          <span class="stat-label">Status</span>
+          <span class="status-badge" [class.status-badge--active]="post.isActive">
+            <mat-icon class="status-icon">{{ post.isActive ? 'check_circle' : 'cancel' }}</mat-icon>
+            {{ post.isActive ? 'Active' : 'Inactive' }}
+          </span>
+        </div>
+
+        <!-- Distance -->
+        <div class="stat-block" *ngIf="post.distanceKm !== undefined && post.distanceKm !== null">
+          <span class="stat-label">Distance</span>
+          <span class="stat-value">
+            <mat-icon class="stat-icon">near_me</mat-icon>
+            {{ post.distanceKm }} km away
+          </span>
+        </div>
+
+        <hr />
+
+        <!-- Contact section -->
+        <div class="contact-section" *ngIf="post.user">
+          <h3><mat-icon class="contact-title-icon">person</mat-icon> Contact</h3>
+          <p class="contact-name">{{ post.user.fullName }}</p>
+          <p class="contact-line" *ngIf="email">
+            <mat-icon class="contact-icon">email</mat-icon> {{ email }}
+          </p>
+          <p class="contact-line" *ngIf="phoneNumber">
+            <mat-icon class="contact-icon">phone</mat-icon> {{ phoneNumber }}
+          </p>
+        </div>
+
+        <!-- CTA Buttons -->
+        <div class="cta-buttons">
+          <a class="cta-btn cta-btn--call" [href]="callLink" *ngIf="phoneNumber">
+            <mat-icon>call</mat-icon> Call
+          </a>
+          <a class="cta-btn cta-btn--whatsapp" [href]="whatsappLink" target="_blank"
+             rel="noopener noreferrer" *ngIf="phoneNumber">
+            <mat-icon>chat</mat-icon> WhatsApp
+          </a>
+          <a class="cta-btn cta-btn--email" [href]="emailLink" *ngIf="email">
+            <mat-icon>email</mat-icon> Email
+          </a>
+        </div>
+
+        <!-- Edit / Delete actions (owner or admin only) -->
+        <div class="owner-actions" *ngIf="canEditOrDelete">
+          <hr />
+          <ng-container *ngIf="!deleteConfirm">
+            <button class="btn btn--danger btn--full" (click)="confirmDelete()">
+              <mat-icon>delete</mat-icon> Delete Listing
+            </button>
+          </ng-container>
+          <ng-container *ngIf="deleteConfirm">
+            <p class="delete-warning">Are you sure? This action cannot be undone.</p>
+            <div class="delete-confirm-row">
+              <button class="btn btn--danger" (click)="deletePost()" [disabled]="deleting">
+                {{ deleting ? 'Deleting…' : 'Yes, Delete' }}
+              </button>
+              <button class="btn btn--secondary" (click)="cancelDelete()">Cancel</button>
+            </div>
+          </ng-container>
+        </div>
+      </aside>
+
+    </div>
+  </ng-container>
+
+</section>
+
