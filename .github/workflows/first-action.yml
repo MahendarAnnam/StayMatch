@@ -8,3 +8,10 @@ jobs:
         run: echo "Hello World"
       - name: Print Good Byee
         run: echo "Done. Byee...!"
+  second-job:
+    runs-on: ubuntu-22.04
+    steps:
+      - name: My First Trial
+        run: echo "Starting the process....!"
+      - name: First Trial End
+        run: echo "Process done, Closing....! :)"
